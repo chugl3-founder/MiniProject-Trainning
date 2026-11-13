@@ -164,5 +164,6 @@ Sau khi hoàn thành Module 1:
 - **Pull Request:** Không áp dụng (Module 1 được đẩy trực tiếp lên `main`).
 
 ---
-![alt text](image.png)
+![Ảnh minh họa](employee-management/image.png)
+
 *Module tiếp theo: Module 2 – Custom Bean & IoC.*
