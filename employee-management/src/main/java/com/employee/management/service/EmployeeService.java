@@ -1,62 +1,97 @@
 package com.employee.management.service;
 
+import com.employee.management.model.Department;
 import com.employee.management.model.Employee;
+import com.employee.management.repository.DepartmentRepository;
+import com.employee.management.repository.EmployeeRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Service
+@Transactional
 public class EmployeeService {
 
-    private final List<Employee> employees = new ArrayList<>();
+    private final EmployeeRepository employeeRepository;
+    private final DepartmentRepository departmentRepository;
 
-    private final AtomicLong idGenerator = new AtomicLong(0);
-
-    public EmployeeService() {
-        employees.add(
-                new Employee(
-                        idGenerator.incrementAndGet(),
-                        "Nguyen Van A",
-                        "nguyenvana@gmail.com"
-                )
-        );
-
-        employees.add(
-                new Employee(
-                        idGenerator.incrementAndGet(),
-                        "Tran Thi B",
-                        "tranthib@gmail.com"
-                )
-        );
+    public EmployeeService(
+            EmployeeRepository employeeRepository,
+            DepartmentRepository departmentRepository) {
+        this.employeeRepository = employeeRepository;
+        this.departmentRepository = departmentRepository;
     }
 
+    // Get all employees
+    @Transactional(readOnly = true)
     public List<Employee> getAllEmployees() {
-        return List.copyOf(employees);
+        return employeeRepository.findAll();
     }
 
-    public Employee addEmployee(Employee employee) {
-        employee.setId(idGenerator.incrementAndGet());
-
-        employees.add(employee);
-
-        return employee;
-    }
-
+    // Get employee by ID
+    @Transactional(readOnly = true)
     public Optional<Employee> getEmployeeById(Long id) {
-        return employees.stream()
-                .filter(employee -> employee.getId().equals(id))
-                .findFirst();
+        return employeeRepository.findById(id);
     }
 
+    // Create employee
+    public Employee addEmployee(Employee employee) {
+
+        if (employee.getDepartment() != null
+                && employee.getDepartment().getId() != null) {
+
+            Long departmentId = employee.getDepartment().getId();
+
+            Department department = departmentRepository.findById(departmentId)
+                    .orElseThrow(() ->
+                            new IllegalArgumentException("Department not found"));
+
+            employee.setDepartment(department);
+        }
+
+        return employeeRepository.save(employee);
+    }
+
+    // Update employee
+    public Optional<Employee> updateEmployee(Long id, Employee employeeDetails) {
+
+        return employeeRepository.findById(id).map(existingEmployee -> {
+
+            existingEmployee.setName(employeeDetails.getName());
+            existingEmployee.setEmail(employeeDetails.getEmail());
+
+            if (employeeDetails.getDepartment() != null
+                    && employeeDetails.getDepartment().getId() != null) {
+
+                Long departmentId = employeeDetails.getDepartment().getId();
+
+                Department department = departmentRepository.findById(departmentId)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException("Department not found"));
+
+                existingEmployee.setDepartment(department);
+            }
+
+            return employeeRepository.save(existingEmployee);
+        });
+    }
+
+    // Delete employee
+    public boolean deleteEmployee(Long id) {
+
+        if (!employeeRepository.existsById(id)) {
+            return false;
+        }
+
+        employeeRepository.deleteById(id);
+        return true;
+    }
+
+    // Search employee by name
+    @Transactional(readOnly = true)
     public List<Employee> searchEmployeesByName(String name) {
-        return employees.stream()
-                .filter(employee -> employee.getName() != null)
-                .filter(employee -> employee.getName()
-                        .toLowerCase()
-                        .contains(name.toLowerCase()))
-                .toList();
+        return employeeRepository.findByNameContainingIgnoreCase(name);
     }
 }
