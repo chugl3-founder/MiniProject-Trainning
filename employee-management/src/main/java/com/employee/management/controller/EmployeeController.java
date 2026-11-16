@@ -18,13 +18,13 @@ public class EmployeeController {
         this.employeeService = employeeService;
     }
 
+    // Get all employees
     @GetMapping
     public ResponseEntity<List<Employee>> getAllEmployees() {
-        List<Employee> employees = employeeService.getAllEmployees();
-
-        return ResponseEntity.ok(employees);
+        return ResponseEntity.ok(employeeService.getAllEmployees());
     }
 
+    // Create employee
     @PostMapping
     public ResponseEntity<Employee> addEmployee(
             @RequestBody Employee employee) {
@@ -36,6 +36,7 @@ public class EmployeeController {
                 .body(savedEmployee);
     }
 
+    // Get employee by ID
     @GetMapping("/{id}")
     public ResponseEntity<Employee> getEmployeeById(
             @PathVariable Long id) {
@@ -45,13 +46,37 @@ public class EmployeeController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    // Update employee
+    @PutMapping("/{id}")
+    public ResponseEntity<Employee> updateEmployee(
+            @PathVariable Long id,
+            @RequestBody Employee employee) {
+
+        return employeeService.updateEmployee(id, employee)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    // Delete employee
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteEmployee(
+            @PathVariable Long id) {
+
+        boolean deleted = employeeService.deleteEmployee(id);
+
+        if (!deleted) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.noContent().build();
+    }
+
+    // Search employee by name
     @GetMapping("/search")
     public ResponseEntity<List<Employee>> searchEmployees(
             @RequestParam String name) {
 
-        List<Employee> employees =
-                employeeService.searchEmployeesByName(name);
-
-        return ResponseEntity.ok(employees);
+        return ResponseEntity.ok(
+                employeeService.searchEmployeesByName(name));
     }
 }
