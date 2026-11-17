@@ -1,7 +1,11 @@
 package com.employee.management.controller;
 
+import com.employee.management.dto.EmployeeRequest;
 import com.employee.management.model.Employee;
 import com.employee.management.service.EmployeeService;
+
+import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,60 +22,49 @@ public class EmployeeController {
         this.employeeService = employeeService;
     }
 
-    // Get all employees
     @GetMapping
     public ResponseEntity<List<Employee>> getAllEmployees() {
-        return ResponseEntity.ok(employeeService.getAllEmployees());
+        return ResponseEntity.ok(
+                employeeService.getAllEmployees());
     }
 
-    // Create employee
     @PostMapping
     public ResponseEntity<Employee> addEmployee(
-            @RequestBody Employee employee) {
+            @Valid @RequestBody EmployeeRequest request) {
 
-        Employee savedEmployee = employeeService.addEmployee(employee);
+        Employee employee = employeeService.addEmployee(request);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(savedEmployee);
+                .body(employee);
     }
 
-    // Get employee by ID
     @GetMapping("/{id}")
     public ResponseEntity<Employee> getEmployeeById(
             @PathVariable Long id) {
 
-        return employeeService.getEmployeeById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        return ResponseEntity.ok(
+                employeeService.getEmployeeById(id));
     }
 
-    // Update employee
     @PutMapping("/{id}")
     public ResponseEntity<Employee> updateEmployee(
             @PathVariable Long id,
-            @RequestBody Employee employee) {
+            @Valid @RequestBody EmployeeRequest request) {
 
-        return employeeService.updateEmployee(id, employee)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        return ResponseEntity.ok(
+                employeeService.updateEmployee(id, request));
     }
 
-    // Delete employee
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEmployee(
             @PathVariable Long id) {
 
-        boolean deleted = employeeService.deleteEmployee(id);
-
-        if (!deleted) {
-            return ResponseEntity.notFound().build();
-        }
+        employeeService.deleteEmployee(id);
 
         return ResponseEntity.noContent().build();
     }
 
-    // Search employee by name
     @GetMapping("/search")
     public ResponseEntity<List<Employee>> searchEmployees(
             @RequestParam String name) {
