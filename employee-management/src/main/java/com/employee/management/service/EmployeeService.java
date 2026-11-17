@@ -1,14 +1,17 @@
 package com.employee.management.service;
 
+import com.employee.management.dto.EmployeeRequest;
+import com.employee.management.exception.DuplicateResourceException;
+import com.employee.management.exception.ResourceNotFoundException;
 import com.employee.management.model.Department;
 import com.employee.management.model.Employee;
 import com.employee.management.repository.DepartmentRepository;
 import com.employee.management.repository.EmployeeRepository;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Transactional
@@ -24,72 +27,72 @@ public class EmployeeService {
         this.departmentRepository = departmentRepository;
     }
 
-    // Get all employees
     @Transactional(readOnly = true)
     public List<Employee> getAllEmployees() {
         return employeeRepository.findAll();
     }
 
-    // Get employee by ID
     @Transactional(readOnly = true)
-    public Optional<Employee> getEmployeeById(Long id) {
-        return employeeRepository.findById(id);
+    public Employee getEmployeeById(Long id) {
+        return employeeRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Employee not found with ID: " + id));
     }
 
-    // Create employee
-    public Employee addEmployee(Employee employee) {
+    public Employee addEmployee(EmployeeRequest request) {
 
-        if (employee.getDepartment() != null
-                && employee.getDepartment().getId() != null) {
-
-            Long departmentId = employee.getDepartment().getId();
-
-            Department department = departmentRepository.findById(departmentId)
-                    .orElseThrow(() ->
-                            new IllegalArgumentException("Department not found"));
-
-            employee.setDepartment(department);
+        if (employeeRepository.existsByEmail(request.getEmail())) {
+            throw new DuplicateResourceException(
+                    "Email already exists: " + request.getEmail());
         }
+
+        Department department = departmentRepository
+                .findById(request.getDepartmentId())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Department not found with ID: "
+                                        + request.getDepartmentId()));
+
+        Employee employee = new Employee();
+        employee.setName(request.getName());
+        employee.setEmail(request.getEmail());
+        employee.setDepartment(department);
 
         return employeeRepository.save(employee);
     }
 
-    // Update employee
-    public Optional<Employee> updateEmployee(Long id, Employee employeeDetails) {
+    public Employee updateEmployee(Long id, EmployeeRequest request) {
 
-        return employeeRepository.findById(id).map(existingEmployee -> {
+        Employee employee = getEmployeeById(id);
 
-            existingEmployee.setName(employeeDetails.getName());
-            existingEmployee.setEmail(employeeDetails.getEmail());
-
-            if (employeeDetails.getDepartment() != null
-                    && employeeDetails.getDepartment().getId() != null) {
-
-                Long departmentId = employeeDetails.getDepartment().getId();
-
-                Department department = departmentRepository.findById(departmentId)
-                        .orElseThrow(() ->
-                                new IllegalArgumentException("Department not found"));
-
-                existingEmployee.setDepartment(department);
-            }
-
-            return employeeRepository.save(existingEmployee);
-        });
-    }
-
-    // Delete employee
-    public boolean deleteEmployee(Long id) {
-
-        if (!employeeRepository.existsById(id)) {
-            return false;
+        if (employeeRepository.existsByEmailAndIdNot(
+                request.getEmail(), id)) {
+            throw new DuplicateResourceException(
+                    "Email already exists: " + request.getEmail());
         }
 
-        employeeRepository.deleteById(id);
-        return true;
+        Department department = departmentRepository
+                .findById(request.getDepartmentId())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Department not found with ID: "
+                                        + request.getDepartmentId()));
+
+        employee.setName(request.getName());
+        employee.setEmail(request.getEmail());
+        employee.setDepartment(department);
+
+        return employeeRepository.save(employee);
     }
 
-    // Search employee by name
+    public void deleteEmployee(Long id) {
+
+        Employee employee = getEmployeeById(id);
+
+        employeeRepository.delete(employee);
+    }
+
     @Transactional(readOnly = true)
     public List<Employee> searchEmployeesByName(String name) {
         return employeeRepository.findByNameContainingIgnoreCase(name);
