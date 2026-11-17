@@ -97,4 +97,9 @@ public class EmployeeService {
     public List<Employee> searchEmployeesByName(String name) {
         return employeeRepository.findByNameContainingIgnoreCase(name);
     }
+
+    @Transactional(readOnly = true)
+    public List<Department> getAllDepartments() {
+        return departmentRepository.findAll();
+    }
 }
