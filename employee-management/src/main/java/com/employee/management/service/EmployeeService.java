@@ -1,5 +1,7 @@
 package com.employee.management.service;
 
+import com.employee.management.config.CacheConfig;
+import com.employee.management.dto.EmployeeCountReportResponse;
 import com.employee.management.dto.EmployeeRequest;
 import com.employee.management.exception.DuplicateResourceException;
 import com.employee.management.exception.ResourceNotFoundException;
@@ -10,9 +12,11 @@ import com.employee.management.repository.EmployeeRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -125,5 +129,17 @@ public class EmployeeService {
     public List<Department> getAllDepartments() {
         log.debug("Fetching all departments");
         return departmentRepository.findAll();
+    }
+
+    @Cacheable(value = CacheConfig.EMPLOYEE_COUNT_CACHE)
+    @Transactional(readOnly = true)
+    public EmployeeCountReportResponse getEmployeeCountReport() {
+        log.info("Calculating total employee count from database (Cache Miss)...");
+        long total = employeeRepository.count();
+        return new EmployeeCountReportResponse(
+                total,
+                LocalDateTime.now(),
+                "Cached report (TTL: 1 minute)"
+        );
     }
 }

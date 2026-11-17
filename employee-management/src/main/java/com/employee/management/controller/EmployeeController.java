@@ -1,5 +1,6 @@
 package com.employee.management.controller;
 
+import com.employee.management.dto.EmployeeCountReportResponse;
 import com.employee.management.dto.EmployeeRequest;
 import com.employee.management.model.Employee;
 import com.employee.management.service.EmployeeService;
@@ -71,5 +72,11 @@ public class EmployeeController {
 
         return ResponseEntity.ok(
                 employeeService.searchEmployeesByName(name));
+    }
+
+    @GetMapping({"/count", "/report/count"})
+    public ResponseEntity<EmployeeCountReportResponse> getEmployeeCountReport() {
+        return ResponseEntity.ok(
+                employeeService.getEmployeeCountReport());
     }
 }
