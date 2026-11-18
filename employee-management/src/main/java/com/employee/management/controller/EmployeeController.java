@@ -1,7 +1,9 @@
 package com.employee.management.controller;
 
+import com.employee.management.dto.DepartmentEmployeeCountDto;
 import com.employee.management.dto.EmployeeCountReportResponse;
 import com.employee.management.dto.EmployeeRequest;
+import com.employee.management.dto.EmployeeStatisticsDto;
 import com.employee.management.model.Employee;
 import com.employee.management.service.EmployeeService;
 
@@ -78,5 +80,19 @@ public class EmployeeController {
     public ResponseEntity<EmployeeCountReportResponse> getEmployeeCountReport() {
         return ResponseEntity.ok(
                 employeeService.getEmployeeCountReport());
+    }
+
+    // Module 10: API thong ke tong hop
+    @GetMapping("/statistics")
+    public ResponseEntity<EmployeeStatisticsDto> getStatistics() {
+        return ResponseEntity.ok(
+                employeeService.getEmployeeStatistics());
+    }
+
+    // Module 10: API thong ke theo tung phong ban
+    @GetMapping("/statistics/departments")
+    public ResponseEntity<List<DepartmentEmployeeCountDto>> getDepartmentStatistics() {
+        return ResponseEntity.ok(
+                employeeService.getDepartmentEmployeeCounts());
     }
 }

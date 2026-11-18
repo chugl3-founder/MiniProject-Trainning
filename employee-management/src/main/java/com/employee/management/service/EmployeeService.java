@@ -1,8 +1,10 @@
 package com.employee.management.service;
 
 import com.employee.management.config.CacheConfig;
+import com.employee.management.dto.DepartmentEmployeeCountDto;
 import com.employee.management.dto.EmployeeCountReportResponse;
 import com.employee.management.dto.EmployeeRequest;
+import com.employee.management.dto.EmployeeStatisticsDto;
 import com.employee.management.exception.DuplicateResourceException;
 import com.employee.management.exception.ResourceNotFoundException;
 import com.employee.management.model.Department;
@@ -141,5 +143,27 @@ public class EmployeeService {
                 LocalDateTime.now(),
                 "Cached report (TTL: 1 minute)"
         );
+    }
+
+    // Module 10: Thong ke tong so nhan vien
+    @Transactional(readOnly = true)
+    public long countTotalEmployees() {
+        return employeeRepository.countTotalEmployees();
+    }
+
+    // Module 10: Thong ke so luong nhan vien theo tung phong ban
+    @Transactional(readOnly = true)
+    public List<DepartmentEmployeeCountDto> getDepartmentEmployeeCounts() {
+        return employeeRepository.countEmployeesByDepartment();
+    }
+
+    // Module 10: Tong hop so lieu thong ke
+    @Transactional(readOnly = true)
+    public EmployeeStatisticsDto getEmployeeStatistics() {
+        long totalEmployees = employeeRepository.countTotalEmployees();
+        long totalDepartments = departmentRepository.count();
+        List<DepartmentEmployeeCountDto> departmentStats = employeeRepository.countEmployeesByDepartment();
+
+        return new EmployeeStatisticsDto(totalEmployees, totalDepartments, departmentStats);
     }
 }
