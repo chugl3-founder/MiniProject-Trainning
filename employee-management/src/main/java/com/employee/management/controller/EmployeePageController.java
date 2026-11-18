@@ -47,6 +47,18 @@ public class EmployeePageController {
         return "employees/list";
     }
 
+    // Module 10: Hien thi trang thong ke bao cao
+    @GetMapping("/statistics")
+    public String showStatistics(Model model) {
+        model.addAttribute(
+                "statistics",
+                employeeService.getEmployeeStatistics()
+        );
+        model.addAttribute("pageTitle", "Employee Statistics & Analytics");
+
+        return "employees/statistics";
+    }
+
     // Display create form
     @GetMapping("/new")
     public String showCreateForm(Model model) {

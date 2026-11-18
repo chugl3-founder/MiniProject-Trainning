@@ -26,10 +26,16 @@
             </p>
         </div>
 
-        <a th:href="@{/employees/new}"
-           class="btn btn-primary">
-            + Add Employee
-        </a>
+        <div class="d-flex gap-2">
+            <a th:href="@{/employees/statistics}"
+               class="btn btn-outline-primary">
+                📊 Statistics
+            </a>
+            <a th:href="@{/employees/new}"
+               class="btn btn-primary">
+                + Add Employee
+            </a>
+        </div>
     </div>
 
     <!-- Success message -->
