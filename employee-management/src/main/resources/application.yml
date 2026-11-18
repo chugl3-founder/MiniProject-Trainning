@@ -15,3 +15,13 @@ management:
   endpoint:
     health:
       show-details: always
+
+# ===================================
+# JWT CONFIGURATION
+# ===================================
+security:
+  jwt:
+    # Chuỗi bí mật phải dài từ 32 ký tự trở lên (256-bit) theo điều kiện trong JwtConfig
+    secret: ThisIsAVeryLongSecretKeyForJwtTokenGenerationSecurity2026
+    # Thời gian hết hạn của token (tính bằng giây, ví dụ 86400s = 24 giờ)
+    expiration-seconds: 86400
